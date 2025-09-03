@@ -1,0 +1,101 @@
+// ---------------------------
+// 1) Bioma: Pantanal 
+// ---------------------------
+var biomas = ee.FeatureCollection(
+  'projects/mapbiomas-territories/assets/TERRITORIES/LULC/BRAZIL/COLLECTION9/WORKSPACE/BIOMES'
+);
+print('Biomas', biomas);
+
+var pantanal = biomas.filter(ee.Filter.eq('Bioma', 'Pantanal'));
+
+Map.addLayer(pantanal.style({color: 'red', width: 1, fillColor: '00000000'}), {}, 'Pantanal');
+Map.centerObject(pantanal, 6);
+
+// ------------------------------------------------------------
+// 2) MapBiomas Fire C4 anual queimado (imagem multibanda)
+// ------------------------------------------------------------
+var fire = ee.Image('projects/mapbiomas-public/assets/brazil/fire/collection4/mapbiomas_fire_collection4_fire_frequency_v1')
+           .select('fire_frequency_2001_2024')
+           .clip (pantanal);
+print('Bandas disponíveis:', fire.bandNames());
+
+Map.addLayer(
+  fire,
+  {min: 1, max: 20, palette: ['#ffffcc','#fd8d3c','#bd0026','#7a0177']},
+  'Frequência (Pantanal) 2001–2024'
+);
+
+
+// Exportar raster de frequência para o Drive
+Export.image.toDrive({
+   image: fire,
+   description: 'freq_queimadas_pantanal_2001_2020',
+   fileNamePrefix: 'freq_queimadas_pantanal_2001_2020',
+   region: pantanal,
+   scale: 30,
+   maxPixels: 1e13
+ });
+
+// Histograma da frequência de queimadas no Pantanal
+var hist = ui.Chart.image.histogram({
+  image: fire,
+  region: pantanal,
+  scale: 30,
+  maxPixels: 1e13
+})
+.setOptions({
+  title: 'Histograma - Frequência de queimadas (Pantanal, 2001–2020)',
+  hAxis: {
+    title: 'Número de anos com fogo (2001–2020)',
+    format: '0'
+  },
+  vAxis: {title: 'Número de pixels'},
+  legend: {position: 'none'},
+  colors: ['#bd0026']
+});
+
+// Exibe o gráfico no console
+print(hist);
+
+print(ucPantanal)
+//Carregar UC do Pantanal
+Map.addLayer(ucPantanal.style({color: 'blue', width: 1, fillColor: '00000000'}), {}, 'Pantanal');
+
+
+// 5) Estatística por UC
+var ucFreq = fire.clip(ucPantanal);
+var reducer = ee.Reducer.mean();   // ou .sum()
+var scale   = 30;
+
+var stats = ucFreq.reduceRegions({
+  collection: ucPantanal,
+  reducer: reducer,
+  scale: scale,
+  tileScale: 4
+});
+
+var nameField = 'nome';
+
+// Renomear e selecionar colunas
+var metricName = 'mean';  // ou 'sum' conforme o reducer
+stats = stats.map(function(f){
+  return f.set('nomeUC', f.get(nameField));
+}).select(['nomeUC', metricName]);
+
+var statsSorted = stats.sort(metricName, false);
+
+// 6) Gráfico por UC (coluna)
+var chart = ui.Chart.feature.byFeature({
+  features: statsSorted,
+  xProperty: 'nomeUC',
+  yProperties: [metricName]
+})
+.setChartType('ColumnChart')
+.setOptions({
+  title: 'Frequência (' + metricName + ') de queimadas por UC — Pantanal',
+  legend: { position: 'none' },
+  hAxis: { slantedText: true, textStyle: { fontSize: 10 } },
+  vAxis: { title: metricName },
+  bar: { groupWidth: '80%' }
+});
+print(chart);
