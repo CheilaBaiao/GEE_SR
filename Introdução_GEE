@@ -1,0 +1,90 @@
+// Hello, GEE!
+print('Olá, GEE!');
+
+//Visualizar uma localidade:
+var pt = ee.Geometry.Point([-45.792479, -23.157424]);
+Map.addLayer(pt, {color: 'red'}, 'Ponto SP');
+Map.setCenter(-45.792479, -23.157424, 12); 
+
+// ==================== Dados ========
+var srtm = ee.Image("USGS/SRTMGL1_003");
+// Ponto e buffer de 5 km
+var p = ee.Geometry.Point([-45.792479, -23.157424]);
+var buffer5km = p.buffer(5000);
+// ==================== Estatística 
+print('Elevação (estatísticas em 5 km):', srtm.reduceRegion({  
+  reducer: ee.Reducer.minMax().combine(ee.Reducer.mean(), '', true),  
+  geometry: buffer5km,  scale: 30,  maxPixels: 1e8}));
+// ========== Visualização ====================
+// Paleta de cores para elevação
+var elevVis = {
+  min: 0,  max: 3000,  
+  palette: ['blue','green','yellow','orange','red']
+  };
+// Camada SRTM
+Map.addLayer(srtm, elevVis, 'SRTM');
+// Buffer em Vermelho
+Map.addLayer(buffer5km, {color: 'red'}, 'Buffer 5 km');
+// Ponto em azul
+Map.addLayer(p, {color: 'blue'}, 'Ponto');// Centraliza no pontoMap.centerObject(p, 11);
+
+// Garante que a geometry desenhada aparecerá no mapa
+Map.centerObject(geometry1, 10);
+Map.addLayer(geometry1, {color: 'yellow'}, 'AOI (desenhada)');
+
+// Supondo 'area' importada via Assets (FeatureCollection)
+Map.centerObject(ucPantanal, 7);
+Map.addLayer(ucPantanal, {}, 'UC do Pantanal');
+print (ucPantanal, 'UC do Pantanal')
+
+//Encontrando a area de interesse:
+var AOI = ucPantanal.filter(ee.Filter.eq('nome','APA do Pontal dos Rios Itiquira e Correntes'))
+Map.centerObject (AOI, 6)
+Map.addLayer(AOI.style({color: 'green', width: 2, fillColor: '00000000'}),
+  {},  'AOI');
+
+//Carregar a imagems a partir do catálogo - exemplo do Sentinel 2
+ /* Function to mask clouds using the Sentinel-2 QA band
+ * @param {ee.Image} image Sentinel-2 image
+ * @return {ee.Image} cloud masked Sentinel-2 image
+ */
+function maskS2clouds(image) {
+  var qa = image.select('QA60');
+
+  // Bits 10 and 11 are clouds and cirrus, respectively.
+  var cloudBitMask = 1 << 10;
+  var cirrusBitMask = 1 << 11;
+
+  // Both flags should be set to zero, indicating clear conditions.
+  var mask = qa.bitwiseAnd(cloudBitMask).eq(0)
+      .and(qa.bitwiseAnd(cirrusBitMask).eq(0));
+  return image.updateMask(mask).divide(10000);
+}
+
+//Carregar imagem
+var dataset = ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
+                  .filterDate('2021-05-01', '2021-05-30')
+                  // Pre-filter to get less cloudy granules.
+                  .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE',30))
+                  .map(maskS2clouds);
+
+var visualization = {
+  min: 0.0,
+  max: 0.3,
+  bands: ['B4', 'B3', 'B2'],
+};
+
+var rgbDemo = dataset.mean().clip(AOI)
+
+Map.centerObject(AOI, 9);
+Map.addLayer(rgbDemo, visualization, 'RGB');
+
+// Exportar para Google Drive (GeoTIFF)
+Export.image.toDrive({
+  image: rgbDemo,
+  description: 'RGB_demo',
+  folder: 'GEE_Export',
+  region: AOI,
+  scale: 10,
+  maxPixels: 1e13
+});
