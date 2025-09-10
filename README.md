@@ -1,8 +1,7 @@
 ```mermaid
 graph TD
   A00[01 Pre processamento GEE] --> A01[02 Definir ROI e referencia espacial]
-  A00 --> A02[03 Selecionar colecoes Landsat L5 L7 L8 L9 e regra de qualidade]
-  A01 --> A03[04 Calcular NDVI por cena e compor meses]
+  A01 --> A02[03 Selecionar colecoes Landsat L5 L7 L8 L9 e regra de qualidade]
   A02 --> A03[04 Calcular NDVI por cena e compor meses]
   A03 --> A04[05 Empilhar 12 meses por ano em uma unica imagem]
   A04 --> A05[06 Definir parametros escala 300 m CRS unico tipo inteiro nodata]
