@@ -1,12 +1,13 @@
 ```mermaid
 graph TD
-  A00[01 Pre processamento GEE] --> A01[02 Definir ROI e referencia espacial]
-  A01 --> A02[03 Selecionar colecoes Landsat L5 L7 L8 L9 e regra de qualidade]
-  A02 --> A03[04 Calcular NDVI por cena e compor meses]
-  A03 --> A04[05 Empilhar 12 meses por ano em uma unica imagem]
-  A04 --> A05[06 Definir parametros escala 300 m CRS unico tipo inteiro nodata]
-  A05 --> A06[07 Exportar 1 GeoTIFF por ano 1985 a 2024 para pasta]
-  A00[01 Pre processamento GEE]--> B00[08 Pos processamento offline]
+  A00[Fluxo de trabalho] --> A01[01 Pre processamento GEE]
+  A01 --> A02[02 Definir ROI e referencia espacial]
+  A02 --> A03[03 Selecionar colecoes Landsat L5 L7 L8 L9 e regra de qualidade]
+  A03 --> A04[04 Calcular NDVI por cena e compor meses]
+  A04 --> A05[05 Empilhar 12 meses por ano em uma unica imagem]
+  A05 --> A06[06 Definir parametros escala 300 m CRS unico tipo inteiro nodata]
+  A06 --> A07[07 Exportar 1 GeoTIFF por ano 1985 a 2024 para pasta]
+  A00--> B00[08 Pos processamento offline]
 
   B00 --> B01[09 Acessar pasta de dados e listar arquivos anuais]
   B01 --> B02[10 Verificar alinhamento igual entre anos CRS resolucao origem do pixel extent]
