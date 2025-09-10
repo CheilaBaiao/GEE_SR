@@ -19,6 +19,5 @@ graph TD
   B07 --> B08[16 Agregar resultados por bloco por ano e por yyyymm calcular earliest latest e modal]
   B08 --> B09[17 Gerar tabelas CSV de resumo e detalhamento]
   B09 --> B10[18 Gerar graficos linha da serie agregada do bloco marcando mes do break modal]
-  B10 --> B11[19 Revisar resultados e preparar figuras para aula]
-  B11 -.-> C00[20 Opcional trocar detector por BFAST em R mantendo o restante igual]
+  
 ```
