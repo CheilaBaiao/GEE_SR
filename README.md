@@ -1,11 +1,13 @@
 ```mermaid
-flowchart TB
-  A([Inicio]) --> B[Pre-processamento - GEE: ROI -> NDVI -> 12 bandas/ano -> GeoTIFF]
-  B --> C[Pos-processamento - Python: montar Drive, validar alinhamento, tiles]
-  C --> D[Remover sazonalidade (anomalias mensais)]
-  D --> E[Detectar 1o break por pixel (ruptures, n_bkps=1)]
-  E --> F[Agregacoes por tile (por ANO e YYYYMM)]
-  F --> G[Gerar CSVs e plots]
-  G -.-> H{{Opcional: BFAST (R via rpy2)}}
+graph TD
+  A[Pre processamento GEE ROI e NDVI] --> B[Exportar 1 GeoTIFF por ano 12 bandas]
+  B --> C[Pos processamento Python montar Drive listar TIFFs]
+  C --> D[Validar alinhamento CRS transform resolucao extent]
+  D --> E[Gerar tiles em pixels ex TILE PX 32 ou 64]
+  E --> F[Ler cubo temporal do tile serie mensal por pixel]
+  F --> G[Remover sazonalidade anomalias mensais]
+  G --> H[Detectar primeiro break por pixel ruptures n bkps 1]
+  H --> I[Contar por ano e yyyymm earliest latest modal]
+  I --> J[Salvar CSVs e gerar plots]
+  J --> K[Opcional BFAST em R via rpy2]
 ```
-
