@@ -6,7 +6,7 @@ graph TD
   A03 --> A04[04 Calcular NDVI por cena e compor meses]
   A04 --> A05[05 Empilhar 12 meses por ano em uma unica imagem]
   A05 --> A06[06 Definir parametros escala 300 m CRS unico tipo inteiro nodata]
-  A06 --> A07[07 Exportar 1 GeoTIFF por ano 1985 a 2024 para pasta]
+  A06 --> A07[07 Exportar 1 GeoTIFF por ano 1985 a 2024 para pastax]
   A00--> B00[08 Pos processamento offline]
 
   B00 --> B01[09 Acessar pasta de dados e listar arquivos anuais]
